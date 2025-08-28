@@ -1,0 +1,288 @@
+import React, { useState } from "react";
+import "./ReportAccess.css";
+
+import logo from "../Assests/sclogoshiva.png";
+import { Link } from "react-router-dom";
+
+function ReportAccess() {
+  const [reportAccess, setReportAccess] = useState([
+    {
+      id: 1,
+      username: "john.smith",
+      createdAt: "2025-08-20",
+      report: "KYC Reports",
+      access: "View",
+    },
+    {
+      id: 2,
+      username: "priya.sharma",
+      createdAt: "2025-08-19",
+      report: "AML Reports",
+      access: "View/Download",
+    },
+  ]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  // form states
+  const [newUser, setNewUser] = useState("");
+  const [newReport, setNewReport] = useState("");
+  const [newAccess, setNewAccess] = useState("View");
+
+  // delete record
+  const handleDelete = (id) => {
+    setReportAccess(reportAccess.filter((item) => item.id !== id));
+  };
+
+  // open edit modal
+  const handleEdit = (item) => {
+    setEditData(item);
+    setIsModalOpen(true);
+  };
+
+  // save edited data
+  const handleSave = (updatedData) => {
+    setReportAccess(
+      reportAccess.map((item) =>
+        item.id === updatedData.id ? { ...item, ...updatedData } : item
+      )
+    );
+  };
+
+  // add new record
+  const handleAssignAccess = () => {
+    if (!newUser || !newReport) {
+      alert("Please select both user and report");
+      return;
+    }
+
+    const newEntry = {
+      id: Date.now(),
+      username: newUser,
+      createdAt: new Date().toISOString().split("T")[0],
+      report: newReport,
+      access: newAccess,
+    };
+
+    setReportAccess([...reportAccess, newEntry]);
+    setNewUser("");
+    setNewReport("");
+    setNewAccess("View");
+  };
+
+  return (
+    <div className="report-access-container">
+      {/* Top Bar */}
+      <header className="top-bar">
+        <div className="top-bar-left">
+          <h2>Report Access Management</h2>
+        </div>
+        <div className="top-bar-right">
+          <div className="profile-section">
+            <div className="profile-pic">
+              <img src="https://via.placeholder.com/40" alt="Profile" />
+            </div>
+            <span className="username">Admin User</span>
+            <button className="logout-btn">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <div className="content-wrapper">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="logo-section">
+            <img src={logo} alt="Standard Chartered" className="logo" />
+          </div>
+          <div className="menu-section">
+            <ul>
+              <li>
+                <Link to="/AdminDashboard" className="menu-link">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/AdminUser" className="menu-link">
+                  User Management
+                </Link>
+              </li>
+              <li className="active">Report Access</li>
+              <li>
+                <Link to="/Admindashboardsettings" className="menu-link">
+                  Settings
+                </Link>
+              </li>
+              <li>
+                <Link to="/Adminaccount" className="menu-link">
+                  Account
+                </Link>
+              </li>
+              <li>
+                <Link to="/Adminhelp" className="menu-link">
+                  Help
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="main-content">
+          {/* Assign Report Access Form */}
+          <div className="assign-card">
+            <h2>Assign Report Access</h2>
+            <div className="assign-form">
+              <input
+                type="text"
+                placeholder="Choose a user..."
+                value={newUser}
+                onChange={(e) => setNewUser(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Choose a report..."
+                value={newReport}
+                onChange={(e) => setNewReport(e.target.value)}
+              />
+              <select
+                value={newAccess}
+                onChange={(e) => setNewAccess(e.target.value)}
+              >
+                <option>View</option>
+                <option>View/Download</option>
+              </select>
+              <button className="btn-assign" onClick={handleAssignAccess}>
+                Assign Access
+              </button>
+            </div>
+          </div>
+
+          {/* Current Report Access Table */}
+          <div className="access-table-card">
+            <h2>Current Report Access</h2>
+            <div className="table-wrapper">
+              <table className="access-table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Created At</th>
+                    <th>Report</th>
+                    <th>Access</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportAccess.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        style={{ textAlign: "center", padding: "40px" }}
+                      >
+                        No records yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    reportAccess.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.username}</td>
+                        <td>{item.createdAt}</td>
+                        <td>{item.report}</td>
+                        <td>
+                          <span className="access-badge">{item.access}</span>
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button
+                              className="btn-edit"
+                              onClick={() => handleEdit(item)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn-delete"
+                              onClick={() => handleDelete(item.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Modal Popup */}
+      {isModalOpen && editData && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Edit Report Access</h3>
+            <div className="modal-form">
+              <label>Username</label>
+              <input
+                type="text"
+                name="username"
+                value={editData.username}
+                onChange={(e) =>
+                  setEditData({ ...editData, username: e.target.value })
+                }
+              />
+
+              <label>Report</label>
+              <select
+                name="report"
+                value={editData.report}
+                onChange={(e) =>
+                  setEditData({ ...editData, report: e.target.value })
+                }
+              >
+                <option>KYC Reports</option>
+                <option>AML Reports</option>
+                <option>Dormant Reports</option>
+                <option>Active User Reports</option>
+                <option>Inactive User Reports</option>
+              </select>
+
+              <label>Access</label>
+              <select
+                name="access"
+                value={editData.access}
+                onChange={(e) =>
+                  setEditData({ ...editData, access: e.target.value })
+                }
+              >
+                <option>View</option>
+                <option>View/Download</option>
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={() => {
+                  handleSave(editData);
+                  setIsModalOpen(false);
+                }}
+                className="btn-save"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="btn-cancel"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default ReportAccess;
